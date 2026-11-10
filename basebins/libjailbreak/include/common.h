@@ -6,6 +6,8 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include <sys/sysctl.h>
+#include <mach/mach.h>
+#include <mach/mach_init.h>
 #include <xpc/xpc.h>
 #include <signal.h>
 #include <pthread.h>
