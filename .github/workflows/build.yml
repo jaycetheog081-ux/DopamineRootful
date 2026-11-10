@@ -20,9 +20,27 @@ jobs:
           xcodebuild -version
           xcode-select -p
 
+      - name: Install Build Dependencies
+        run: |
+          brew install ldid llvm dpkg
+
+          echo "$(brew --prefix llvm)/bin" >> "$GITHUB_PATH"
+          echo "$(brew --prefix)/bin" >> "$GITHUB_PATH"
+
+      - name: Build Basebins
+        run: |
+          set -euo pipefail
+
+          make -C basebins package
+
+          test -s basebins/basebins.tar
+          test -s basebins/tnsv2_updater.deb
+          test -s basebins/tnsv2_updater_stub.deb
+
       - name: Verify Project and Scheme
         run: |
           set -euo pipefail
+
           test -d "Amethyst/Amethyst.xcodeproj"
           xcodebuild -list -project "Amethyst/Amethyst.xcodeproj"
 
@@ -35,6 +53,7 @@ jobs:
             -scheme "Amethyst" \
             -sdk iphoneos \
             -configuration Release \
+            -destination "generic/platform=iOS" \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
