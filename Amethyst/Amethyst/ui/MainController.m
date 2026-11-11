@@ -211,14 +211,14 @@ jailbroken:
         amethyst.popupCardHeight = 540.0f;
     }
 
-    initSubview(mainTitle, [UILabel createLabel:@"DopamineRootful"
+    initSubview(mainTitle, [UILabel createLabel:@"DopamineLegacy"
                                            size:42.0f
                                            bold:YES
                                           align:NSTextAlignmentCenter]);
 
     NSString *subText = [self deviceJailbroken]
-        ? @"ROOTFUL  •  JAILBROKEN"
-        : @"ROOTFUL  •  iOS 12–13";
+        ? @"LEGACY  •  JAILBROKEN"
+        : @"LEGACY  •  iOS 12–13";
 
     UIColor *subColor = [self deviceJailbroken]
         ? [UIColor colorWithRed:0.35 green:0.88 blue:0.55 alpha:1.0]
