@@ -15,8 +15,13 @@ extern int sandbox_check(pid_t pid, const char *operation, uint32_t type, ...);
 extern int csops(pid_t pid, unsigned int ops, void *useraddr, size_t usersize);
 int run_binary(char *path, char **args, char **env, bool wait, bool root);
 
+@interface MainController ()
+@property (nonatomic, strong) CardButton *respringCardButton;
+@property (nonatomic, strong) CardButton *userspaceRebootCardButton;
+@end
+
 static UIColor *DopamineAccentColor(void) {
-    return [UIColor colorWithRed:0.62 green:0.43 blue:0.98 alpha:1.0];
+    return [UIColor colorWithRed:0.10 green:0.72 blue:0.58 alpha:1.0];
 }
 
 @implementation MainController
@@ -239,10 +244,15 @@ jailbroken:
     self.mainSubtitle.alpha = 0.85f;
 
     self.mainCard = [[CardView alloc] initWithViews:@[
-        initCardBtnOption(jailbreakCardButton, @"Jailbreak", jailbreakButtonAction),
         initCardBtnOption(settingsCardButton, @"Settings", openSettingsCard),
+        initCardBtnOption(respringCardButton, @"Restart SpringBoard", respringDevice),
+        initCardBtnOption(userspaceRebootCardButton, @"Reboot Userspace", userspaceReboot),
         initCardBtnOption(creditsCardButton, @"Credits", openCreditsCard)
     ]];
+
+    self.jailbreakCardButton = [[CardButton alloc] init:@"Jailbreak"
+                                                    _id:self
+                                                   _sel:@selector(jailbreakButtonAction)];
 
     self.mainCard.cardView.alpha = 0.96f;
     self.mainCard.cardView.layer.cornerRadius = 16.0f;
@@ -253,7 +263,10 @@ jailbroken:
     self.bgImage.alpha = 0.82f;
 
     [self.creditsCardButton showSeprator:NO];
+    [self.jailbreakCardButton showSeprator:NO];
+
     [self.view addSubview:self.mainCard.cardView];
+    [self.view addSubview:self.jailbreakCardButton.optionView];
 
     self.progressRing = [[ProgressRing alloc] initWithFrame:CGRectMake(0, 0, 200, 200)];
     [self.view addSubview:self.progressRing];
@@ -414,14 +427,22 @@ jailbroken:
 
     [self applyConstraints];
 
-    self.jailbreakCardButton.optionButton.backgroundColor = DopamineAccentColor();
-    self.jailbreakCardButton.optionButton.layer.cornerRadius = 12.0f;
+    self.jailbreakCardButton.optionButton.backgroundColor =
+        [DopamineAccentColor() colorWithAlphaComponent:0.88f];
+    self.jailbreakCardButton.optionButton.layer.cornerRadius = 14.0f;
     self.jailbreakCardButton.optionButton.layer.masksToBounds = YES;
+    self.jailbreakCardButton.optionButton.layer.borderWidth = 1.0f;
+    self.jailbreakCardButton.optionButton.layer.borderColor =
+        [[UIColor whiteColor] colorWithAlphaComponent:0.24f].CGColor;
     self.jailbreakCardButton.optionButton.titleLabel.font =
         [UIFont boldSystemFontOfSize:18.0f];
-
     self.jailbreakCardButton.optionButton.contentEdgeInsets =
         UIEdgeInsetsMake(8.0f, 12.0f, 8.0f, 12.0f);
+
+    self.respringCardButton.optionButton.titleLabel.font =
+        [UIFont systemFontOfSize:16.0f];
+    self.userspaceRebootCardButton.optionButton.titleLabel.font =
+        [UIFont systemFontOfSize:16.0f];
 }
 
 - (NSString *)getErrorTitle:(jb_error_t)err {
@@ -531,9 +552,16 @@ jailbroken:
         exploitButtonConstraint(exploitOptionHemlock, exploitPopupCard.separator),
         exploitButtonConstraint(exploitOptionTrigon, exploitOptionHemlock.optionView),
 
-        mainCardOptionConstraint(jailbreakCardButton, mainCard.cardView, 5),
-        mainCardOptionConstraint(settingsCardButton, jailbreakCardButton.separator, 0),
-        mainCardOptionConstraint(creditsCardButton, settingsCardButton.separator, 0),
+        mainCardOptionConstraint(settingsCardButton, mainCard.cardView, 5),
+        mainCardOptionConstraint(respringCardButton, settingsCardButton.separator, 0),
+        mainCardOptionConstraint(userspaceRebootCardButton, respringCardButton.separator, 0),
+        mainCardOptionConstraint(creditsCardButton, userspaceRebootCardButton.separator, 0),
+
+        [self.jailbreakCardButton.optionView.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],
+        [self.jailbreakCardButton.optionView.widthAnchor constraintEqualToConstant:amethyst.buttonCardWidth-60],
+        [self.jailbreakCardButton.optionView.heightAnchor constraintEqualToConstant:55],
+        [self.jailbreakCardButton.optionView.bottomAnchor constraintEqualToAnchor:layoutGuide.bottomAnchor constant:-24],
+        [self.mainCard.cardView.bottomAnchor constraintEqualToAnchor:self.jailbreakCardButton.optionView.topAnchor constant:-14],
 
         settingsOptionConstraint(settingsOption1, settingsPopupCard.cardTitle),
         settingsOptionConstraint(settingsOption2, settingsOption1.optionView),
@@ -551,9 +579,8 @@ jailbroken:
         setAnchorConstraint(creditsTable.view.bottomAnchor, creditsPopupCard.cardView.bottomAnchor, 0),
 
         setAnchorConstraint(mainCard.cardView.centerXAnchor, view.centerXAnchor, 0),
-        setAnchorConstraint(mainCard.cardView.bottomAnchor, layoutGuide.bottomAnchor, -30),
         setConstantConstraint(mainCard.cardView.widthAnchor, amethyst.buttonCardWidth),
-        setConstantConstraint(mainCard.cardView.heightAnchor, 170),
+        setConstantConstraint(mainCard.cardView.heightAnchor, 240),
 
         setAnchorConstraint(mainTitle.topAnchor, layoutGuide.topAnchor, 40),
         setAnchorConstraint(mainTitle.centerXAnchor, view.centerXAnchor, 0),
@@ -578,6 +605,8 @@ jailbroken:
     self.jailbreakCardButton.optionButton.enabled = NO;
     self.creditsCardButton.optionButton.enabled = NO;
     self.settingsCardButton.optionButton.enabled = NO;
+    self.respringCardButton.optionButton.enabled = NO;
+    self.userspaceRebootCardButton.optionButton.enabled = NO;
 
     [UIView transitionWithView:self.jailbreakCardButton.optionButton
                       duration:0.2f
@@ -593,6 +622,8 @@ jailbroken:
         self.statusIndicator.alpha = 1.0f;
         self.creditsCardButton.optionButton.alpha = 0.35f;
         self.settingsCardButton.optionButton.alpha = 0.35f;
+        self.respringCardButton.optionButton.alpha = 0.35f;
+        self.userspaceRebootCardButton.optionButton.alpha = 0.35f;
     }];
 
     amethyst.restoreRootfs = [self.restoreRootFSOption getSwitchValue];
@@ -616,6 +647,8 @@ jailbroken:
             self.jailbreakCardButton.optionButton.enabled = YES;
             self.creditsCardButton.optionButton.enabled = YES;
             self.settingsCardButton.optionButton.enabled = YES;
+            self.respringCardButton.optionButton.enabled = YES;
+            self.userspaceRebootCardButton.optionButton.enabled = YES;
 
             [UIView animateWithDuration:0.5
                                   delay:0.0
@@ -624,6 +657,8 @@ jailbroken:
                 self.statusIndicator.alpha = 0.0f;
                 self.creditsCardButton.optionButton.alpha = 1.0f;
                 self.settingsCardButton.optionButton.alpha = 1.0f;
+                self.respringCardButton.optionButton.alpha = 1.0f;
+                self.userspaceRebootCardButton.optionButton.alpha = 1.0f;
             } completion:^(BOOL finished) {
                 if (finished) {
                     [self.statusIndicator stopAnimating];
