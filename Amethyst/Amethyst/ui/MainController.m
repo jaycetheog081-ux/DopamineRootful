@@ -560,7 +560,7 @@ jailbroken:
         [self.jailbreakCardButton.optionView.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],
         [self.jailbreakCardButton.optionView.widthAnchor constraintEqualToConstant:amethyst.buttonCardWidth-60],
         [self.jailbreakCardButton.optionView.heightAnchor constraintEqualToConstant:55],
-        [self.jailbreakCardButton.optionView.bottomAnchor constraintEqualToAnchor:layoutGuide.bottomAnchor constant:-24],
+        [self.jailbreakCardButton.optionView.bottomAnchor constraintEqualToAnchor:self.layoutGuide.bottomAnchor constant:-24],
         [self.mainCard.cardView.bottomAnchor constraintEqualToAnchor:self.jailbreakCardButton.optionView.topAnchor constant:-14],
 
         settingsOptionConstraint(settingsOption1, settingsPopupCard.cardTitle),
